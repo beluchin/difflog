@@ -1,10 +1,12 @@
 (ns difflog.core
-  (:gen-class))
+  (:gen-class)
+  (:require [difflog.app :as app]
+            [difflog.domain :as domain]))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (println (app/output (domain/difflog (slurp (first args))
+                                       (slurp (second args))))))
 
 
 (comment

@@ -6,7 +6,8 @@
 (t/deftest e-to-e
   (t/testing "the whole thing is properly wired"
     (t/is (= "[-hello-]{+goodbye+} world"
-             (tf/with-tempfile [lhs (tf/tempfile "hello world")
-                                rhs (tf/tempfile "goodbye world")]
-               (with-out-str (sut/-main (.getName lhs)
-                                        (.getName rhs))))))))
+             (clojure.string/trim-newline
+              (tf/with-tempfile [lhs (tf/tempfile "hello world")
+                                 rhs (tf/tempfile "goodbye world")]
+                (with-out-str (sut/-main (.getAbsolutePath lhs)
+                                         (.getAbsolutePath rhs)))))))))
