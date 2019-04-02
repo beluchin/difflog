@@ -1,6 +1,7 @@
 (ns difflog.domain-test
   (:require [difflog.domain :as sut]
-            [clojure.test :as t]))
+            [clojure.test :as t]
+            [clojure.string :as string]))
 
 (t/deftest difflog
 
@@ -12,6 +13,10 @@
     (t/is (empty? (sut/difflog "hello world" "hello world"))))
 
   (t/testing "multilines"
-    (t/is (= [["second" "has" ["one" "una"] "difference"]]
-             (sut/difflog "first line is identical\nsecond has one difference"
-                          "first line is identical\nsecond has una difference")))))
+    (let [join (partial string/join (System/lineSeparator))]
+      (t/is (= [["second" "has" ["one" "una"] "difference"]]
+               (sut/difflog (join  ["first line is identical" 
+                                    "second has one difference"])
+                            (join  ["first line is identical"
+                                    "second has una difference"]))))))
+  )
