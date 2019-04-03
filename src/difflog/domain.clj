@@ -1,25 +1,34 @@
 (ns difflog.domain)
 
-(declare line-delimiter line-diff contains-diff?)
-(defn difflog [lhs rhs]
-  (let [l (.split lhs line-delimiter)
-        r (.split rhs line-delimiter)]
-    (remove (comp not contains-diff?) (map line-diff l r))))
+(declare line-delimiter word-diffs contains-diff?)
+(defn difflog
+  ([lhs rhs] (difflog lhs rhs {}))
+  ([lhs rhs rules]
+   (let [l (.split lhs line-delimiter)
+         r (.split rhs line-delimiter)]
+     (remove (comp not contains-diff?) (map (partial word-diffs rules) l r)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const word-delimiter "\\s+")
 
-(defn- diff-or-token [lt rt]
-  (if (= lt rt) lt [lt rt]))
+(defn- ignore-diffs? [l r rules]
+  (= (rules l) r))
 
-(defn- line-diff
+(defn- diff-or-word
+  "takes in two words"
+  [rules l r]
+  (if (or (= l r) (ignore-diffs? l r rules))
+    l
+    [l r]))
+
+(defn- word-diffs
   "computes difference between two lines
-  > (line-diff 'hello world' 'goodbye world')
-  [-hello-]{+goodbye+} world"
-  [lhs rhs]
+  ['hello world' 'goodbye world' {}] => [[hello goodbye] world]
+  ['a' 'b' {'a' 'b'}] => (empty? ...)"
+  [rules lhs rhs]
   (let [l (.split lhs word-delimiter)
         r (.split rhs word-delimiter)]
-    (map diff-or-token l r)))
+    (map (partial diff-or-word rules) l r)))
 
 (defn- contains-diff? [line]
   (some vector? line))

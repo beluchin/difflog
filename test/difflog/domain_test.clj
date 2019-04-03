@@ -3,7 +3,7 @@
             [clojure.test :as t]
             [clojure.string :as string]))
 
-(t/deftest difflog
+(t/deftest basic
 
   (t/testing "word difference"
     (t/is (= [[["hello" "goodbye"] "world"]]
@@ -18,5 +18,8 @@
                (sut/difflog (join  ["first line is identical" 
                                     "second has one difference"])
                             (join  ["first line is identical"
-                                    "second has una difference"]))))))
-  )
+                                    "second has una difference"])))))))
+
+(t/deftest rules
+  (t/testing "ignore certain word differences"
+    (t/is (empty? (sut/difflog "a" "b" {"a" "b"})))))
