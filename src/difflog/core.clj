@@ -1,15 +1,20 @@
 (ns difflog.core
   (:gen-class)
-  (:require [difflog.app :as app]
-            [difflog.domain :as domain]))
+  (:require [difflog.app :as app]))
 
+(declare difflog)
 (defn -main
   [& args]
-  (println (app/output (domain/difflog (slurp (first args))
-                                       (slurp (second args))))))
+  (print (apply app/difflog args)))
 
 
 (comment
+  (apply app/difflog ["resources/lhs" "resources/rhs"])
+  
+  (apply (fn [x y]) [1 2 3])
+
+  (clojure.edn/read-string "{\"a\" \"b\"}")
+
   ;; Hello World - https://github.com/google/diff-match-patch/wiki/Language:-Java
   (import 'name.fraser.neil.plaintext.diff_match_patch)
   (def tool (diff_match_patch.))
