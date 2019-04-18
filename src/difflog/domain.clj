@@ -2,33 +2,52 @@
 
 (declare line-delimiter word-diffs contains-diff?)
 (defn difflog
-  ([lhs rhs] (difflog lhs rhs {}))
-  ([lhs rhs rules]
-   (let [l (.split lhs line-delimiter)
-         r (.split rhs line-delimiter)]
-     (remove (comp not contains-diff?) (map (partial word-diffs rules) l r)))))
+  "l, r are text"
+  ([l r] (difflog l r {}))
+  ([l r rules]
+   (let [larr (.split l line-delimiter)
+         rarr (.split r line-delimiter)]
+     (remove (comp not contains-diff?) (map #(word-diffs %1 %2 rules) larr rarr)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const word-delimiter "\\s+")
 
-(defn- ignore-diffs? [l r rules]
-  (= (rules l) r))
+(defn- to-num-or-error [& args]
+  (try
+    (vec (map #(Double/valueOf %) args))
+    (catch NumberFormatException _
+      :error)))
+
+(def ^:const transformer {:num to-num-or-error})
+
+(defn- ignore-diff-one-rule? [l r [k v]]
+  (if (string? k)
+    (and (= l k) (= r v)) ; word rule
+    (let [predicate-fn v
+          transform-fn (transformer k)
+          transformed (transform-fn l r)]
+      (if (= :error transformed)
+        false
+        (apply predicate-fn transformed)))))
+
+(defn- ignore-diff? [l r rules]
+  (some true? (map (partial ignore-diff-one-rule? l r) rules)))
 
 (defn- diff-or-word
-  "takes in two words"
-  [rules l r]
-  (if (or (= l r) (ignore-diffs? l r rules))
+  "takes in two words. applies rules only if the words are different"
+  [l r rules]
+  (if (or (= l r) (ignore-diff? l r rules))
     l
     [l r]))
 
 (defn- word-diffs
-  "computes difference between two lines
+  "computes word difference between two lines
   ['hello world' 'goodbye world' {}] => [[hello goodbye] world]
   ['a' 'b' {'a' 'b'}] => (empty? ...)"
-  [rules lhs rhs]
-  (let [l (.split lhs word-delimiter)
-        r (.split rhs word-delimiter)]
-    (map (partial diff-or-word rules) l r)))
+  [l r rules]
+  (let [larr (.split l word-delimiter)
+        rarr (.split r word-delimiter)]
+    (map #(diff-or-word %1 %2 rules) larr rarr)))
 
 (defn- contains-diff? [line]
   (some vector? line))
@@ -40,6 +59,15 @@
 
 
 (comment
+  (to-num-or-error "hello" "world")
+
+  (Double/valueOf "123hello")
+  
+  (#(identity % %&) 1 2)
+  (map identity {:a 1}) ; ([:a 1])
+  (some true? [false])
+  
+  (seq {:a 1, :b 2})
   (seq (.split "        hello  \t  world              " "\\"))
   (seq (.split " hello " "\\s+"))
  
