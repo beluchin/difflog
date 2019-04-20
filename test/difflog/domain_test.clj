@@ -19,18 +19,27 @@
                             (join  ["first line is identical"
                                     "second has una difference"])))))))
 
+(declare drop-last-arg)
 (t/deftest rules
   (t/testing "word"
     (t/is (empty? (sut/difflog "a" "b" {"a" "b"})))
     (t/is (seq (sut/difflog "a" "b" {"b" "a"})))) ; not empty; not symmetrical
 
   (t/testing "numerical"
-    (let [rule {:num (comp #(< % 0.1) #(Math/abs %) -)}]
+    (let [rule {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
       (t/is (empty? (sut/difflog "1.01" "1.02" rule)))
-      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule))))))
+      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule)))))
 
+  (t/testing "columns"
+    (t/is (empty? (sut/difflog "hello" "world" {:col 1})))
+    (t/is (empty? (sut/difflog "hello world" "hello mundo" {:col 2})))))
+
+(defn- drop-last-arg [fn]
+  #(apply fn (drop-last %&)))
 
 (comment
+  ((comp #(< % 0.1) #(Math/abs %) (drop-last-arg -)) 1.01 1.02 :whatever)
+  
   (sut/difflog "hello" "world" {:num (comp #(< % 0.1) #(Math/abs %) -)})
   (sut/difflog "world goodbye" "world hello")
   (sut/difflog "1.01 hello" "1.02 world" {:num (comp #(< % 0.1) #(Math/abs %) -)})
