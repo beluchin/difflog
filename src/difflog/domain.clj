@@ -19,18 +19,18 @@
               "predicate: x -> l r idx -> true | false")
     :const true}
   {:col {:transformer identity
-         :predicate (fn [x] (if (set? x)
+         :predicate-builder (fn [x] (if (set? x)
                               #(contains? x %3)
                               #(= x %3)))}
    :num {:transformer to-num-or-na
-         :predicate identity}
+         :predicate-builder identity}
    :word {:transformer identity
-          :predicate (fn [k v] (fn [l r _] (and (= k l) (= v r))))}})
+          :predicate-builder (fn [k v] (fn [l r _] (and (= k l) (= v r))))}})
 
 (defn- ignore-string-rule [k v]
   (let [trans-pred (trans-pred :word)
         transformer (:transformer trans-pred)
-        predicate (:predicate trans-pred)]
+        predicate (:predicate-builder trans-pred)]
     [transformer (predicate k v)]))
 
 (defn- ignore-rule [[k v]]
@@ -38,8 +38,8 @@
     (ignore-string-rule k v)
     (let [trans-pred (trans-pred k)
           transformer (:transformer trans-pred)
-          predicate (:predicate trans-pred)]
-      [transformer (predicate v)])))
+          predicate-builder (:predicate-builder trans-pred)]
+      [transformer (predicate-builder v)])))
 
 (defn- ignore-rules [specs]
   (into {} (map ignore-rule specs)))

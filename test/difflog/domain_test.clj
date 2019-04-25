@@ -26,9 +26,9 @@
     (t/is (seq (sut/difflog "a" "b" {"b" "a"})))) ; not empty; not symmetrical
 
   (t/testing "numerical"
-    (let [rule {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
-      (t/is (empty? (sut/difflog "1.01" "1.02" rule)))
-      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule)))))
+    (let [rule-spec {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
+      (t/is (empty? (sut/difflog "1.01" "1.02" rule-spec)))
+      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule-spec)))))
 
   (t/testing "one column"
     (t/is (empty? (sut/difflog "hello" "world" {:col 1})))
