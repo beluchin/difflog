@@ -14,14 +14,15 @@
 (declare to-num-or-na)
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const word-delimiter "\\s+")
-(def trans-pred
-  ^{:doc (str "transformer: [l r] -> [newl newr] | :na (not-applicable)"
-              "predicate: x -> l r idx -> true | false")
-    :const true}
+(def ^{:doc (clojure.string/join "\n"
+             ["transformer: [l r] -> [newl newr] | :na (not-applicable)"
+              "  predicate-builder: x -> l r idx -> true | false"])
+       :const true}
+  trans-pred
   {:col {:transformer identity
          :predicate-builder (fn [x] (if (set? x)
-                              #(contains? x %3)
-                              #(= x %3)))}
+                                      #(contains? x %3)
+                                      #(= x %3)))}
    :num {:transformer to-num-or-na
          :predicate-builder identity}
    :word {:transformer identity

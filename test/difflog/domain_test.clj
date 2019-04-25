@@ -1,7 +1,8 @@
 (ns difflog.domain-test
-  (:require [difflog.domain :as sut]
+  (:require [clojure.string :as string]
             [clojure.test :as t]
-            [clojure.string :as string]))
+            [difflog.domain :as sut]
+            [difflog.domain.num :as num]))
 
 (t/deftest basic
   (t/testing "word difference"
@@ -28,7 +29,10 @@
   (t/testing "numerical"
     (let [rule-spec {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
       (t/is (empty? (sut/difflog "1.01" "1.02" rule-spec)))
-      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule-spec)))))
+      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule-spec))))
+
+    (t/is (seq (sut/difflog "1.01 hello" "1.02 world"
+                            {:num (num/diff-no-larger-than 0.1)}))))
 
   (t/testing "one column"
     (t/is (empty? (sut/difflog "hello" "world" {:col 1})))
