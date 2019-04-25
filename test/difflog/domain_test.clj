@@ -30,9 +30,13 @@
       (t/is (empty? (sut/difflog "1.01" "1.02" rule)))
       (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule)))))
 
-  (t/testing "columns"
+  (t/testing "one column"
     (t/is (empty? (sut/difflog "hello" "world" {:col 1})))
-    (t/is (empty? (sut/difflog "hello world" "hello mundo" {:col 2})))))
+    (t/is (empty? (sut/difflog "hello world" "hello mundo" {:col 2}))))
+
+  (t/testing "multiple columns"
+    (t/is (empty? (sut/difflog "hello dear world" "goodbye dear mundo"
+                               {:col #{1 3}})))))
 
 (defn- drop-last-arg [fn]
   #(apply fn (drop-last %&)))

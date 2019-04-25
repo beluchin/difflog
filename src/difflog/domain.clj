@@ -19,7 +19,9 @@
               "predicate: x -> l r idx -> true | false")
     :const true}
   {:col {:transformer identity
-         :predicate (fn [idx] (fn [_ _ x] (= idx x)))}
+         :predicate (fn [x] (if (set? x)
+                              #(contains? x %3)
+                              #(= x %3)))}
    :num {:transformer to-num-or-na
          :predicate identity}
    :word {:transformer identity
@@ -84,6 +86,11 @@
 
 
 (comment
+  (#{:a} :a)
+  (#{:a} :b)
+  (contains? #{:a} :a)
+  (contains? #{:a} :b)
+  
   (into {} [[:a 1] [:b 2]])
   (seq? [])
   (seq? {})
@@ -104,7 +111,8 @@
   (seq {:a 1, :b 2})
   (seq (.split "        hello  \t  world              " "\\"))
   (seq (.split " hello " "\\s+"))
- 
+  (seq (.split "hello=123 mundo[456]" "[\\s=\\[\\]]+"))
+   
   (map + [1 2] [100 200])
 
   (difflog "hello world" "goodbye world")
