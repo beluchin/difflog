@@ -50,7 +50,7 @@
       [transformer (predicate-builder v)])))
 
 (defn- trans-preds [rules]
-  (into {} (map trans-pred rules)))
+  (set (map trans-pred rules)))
 
 (defn- ignore-diff-one? [l r idx [transformer predicate]]
   (let [transformed (transformer [l r])]
