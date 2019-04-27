@@ -1,24 +1,31 @@
 (ns difflog.domain)
 
-(declare line-delimiter word-diffs contains-diff? ignore-rules)
+(declare line-delimiter word-diffs contains-diff? trans-preds)
 (defn difflog
   "l, r are text"
   ([l r] (difflog l r {}))
-  ([l r ignore-rule-specs]
+  ([l r rules]
    (let [llines (.split l line-delimiter)
          rlines (.split r line-delimiter)
-         rules (ignore-rules ignore-rule-specs)]
+         t-ps (trans-preds rules)]
      (remove (comp not contains-diff?)
-             (map #(word-diffs %1 %2 rules) llines rlines)))))
+             (map #(word-diffs %1 %2 t-ps) llines rlines)))))
 
-(declare to-num-or-na)
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const word-delimiter "\\s+")
+
+(defn- to-num-or-na [xs]
+  (try
+    (vec (map #(Double/valueOf %) xs))
+    (catch NumberFormatException _
+      :na)))
+
 (def ^{:doc (clojure.string/join "\n"
              ["transformer: [l r] -> [newl newr] | :na (not-applicable)"
               "  predicate-builder: x -> l r idx -> true | false"])
-       :const true}
-  trans-pred
+       :const true
+       :private true}
+  rule-def
   {:col {:transformer identity
          :predicate-builder (fn [x] (if (set? x)
                                       #(contains? x %3)
@@ -28,42 +35,36 @@
    :word {:transformer identity
           :predicate-builder (fn [k v] (fn [l r _] (and (= k l) (= v r))))}})
 
-(defn- ignore-string-rule [k v]
-  (let [trans-pred (trans-pred :word)
-        transformer (:transformer trans-pred)
-        predicate (:predicate-builder trans-pred)]
+(defn- string-trans-pred [k v]
+  (let [rd (rule-def :word)
+        transformer (:transformer rd)
+        predicate (:predicate-builder rd)]
     [transformer (predicate k v)]))
 
-(defn- ignore-rule [[k v]]
+(defn- trans-pred [[k v :as rule]]
   (if (string? k)
-    (ignore-string-rule k v)
-    (let [trans-pred (trans-pred k)
+    (string-trans-pred k v)
+    (let [trans-pred (rule-def k)
           transformer (:transformer trans-pred)
           predicate-builder (:predicate-builder trans-pred)]
       [transformer (predicate-builder v)])))
 
-(defn- ignore-rules [specs]
-  (into {} (map ignore-rule specs)))
+(defn- trans-preds [rules]
+  (into {} (map trans-pred rules)))
 
-(defn- to-num-or-na [xs]
-  (try
-    (vec (map #(Double/valueOf %) xs))
-    (catch NumberFormatException _
-      :na)))
-
-(defn- ignore-diff-one-rule? [l r idx [transformer predicate]]
+(defn- ignore-diff-one? [l r idx [transformer predicate]]
   (let [transformed (transformer [l r])]
     (if (= :na transformed)
       false
       (apply #(predicate %1 %2 idx) transformed))))
 
-(defn- ignore-diff? [l r idx rules]
-  (some true? (map (partial ignore-diff-one-rule? l r idx) rules)))
+(defn- ignore-diff? [l r idx trans-preds]
+  (some true? (map (partial ignore-diff-one? l r idx) trans-preds)))
 
 (defn- diff-or-word
   "takes in two words. applies rules only if the words are different"
-  [l r idx rules]
-  (if (or (= l r) (ignore-diff? l r idx rules))
+  [l r idx trans-preds]
+  (if (or (= l r) (ignore-diff? l r idx trans-preds))
     l
     [l r]))
 
@@ -71,11 +72,11 @@
   "computes word difference between two lines
   ['hello world' 'goodbye world' {}] => [[hello goodbye] world]
   ['a' 'b' {'a' 'b'}] => (empty? ...)"
-  [l r rules]
+  [l r trans-preds]
   (let [lwords (.split l word-delimiter)
         rwords (.split r word-delimiter)
         range-from-1 (drop 1 (range))]
-    (map #(diff-or-word %1 %2 %3 rules) lwords rwords range-from-1)))
+    (map #(diff-or-word %1 %2 %3 trans-preds) lwords rwords range-from-1)))
 
 (defn- contains-diff? [line]
   (some vector? line))
