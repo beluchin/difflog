@@ -12,7 +12,10 @@
              (map #(word-diffs %1 %2 t-ps) llines rlines)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
-(def ^:const word-delimiter "\\s+")
+(def ^:const token-delimiter "[\\s\\[\\]]")
+(def ^:const split-pattern (re-pattern (format "(?<=\\S)(?=%s)|(?<=%s)(?=\\S)"
+                                               token-delimiter
+                                               token-delimiter)))
 
 (defn- to-num-or-na [xs]
   (try
@@ -73,8 +76,8 @@
   ['hello world' 'goodbye world' {}] => [[hello goodbye] world]
   ['a' 'b' {'a' 'b'}] => (empty? ...)"
   [l r trans-preds]
-  (let [lwords (.split l word-delimiter)
-        rwords (.split r word-delimiter)
+  (let [lwords (.split split-pattern l)
+        rwords (.split split-pattern r)
         range-from-1 (drop 1 (range))]
     (map #(diff-or-word %1 %2 %3 trans-preds) lwords rwords range-from-1)))
 

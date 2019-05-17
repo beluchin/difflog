@@ -4,17 +4,21 @@
             [tempfile.core :as f]
             [clojure.string :as str]))
 
-(declare main)
-(t/deftest e-to-e
+(declare main multiline)
+
+(t/deftest basic
   (let [lhs "hello world"
         rhs "goodbye world"]
     (t/testing "without rules"
       (t/is (= "[-hello-]{+goodbye+} world" (main lhs rhs))))
 
     (t/testing "with rules - third argument"
-      (t/is (empty? (main lhs rhs "{\"hello\" \"goodbye\"}"))))))
+      (t/is (empty? (main lhs rhs "{\"hello\" \"goodbye\"}")))))
 
-(declare multiline)
+  (t/testing "[ and ] are delimiters"
+    (t/is (= "[[-a-]{+b+}]"
+             (main "[a]" "[b]")))))
+
 (t/deftest line-separator-on-input
   (t/testing "\r\n as line separator"
     (t/is (= (multiline "hello [-world-]{+mundo+}"
