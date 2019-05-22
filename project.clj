@@ -10,8 +10,11 @@
                  [org.clojure/core.typed "0.5.3"  :classifier "slim"]
                  [tortue/spy "1.4.0"]
 
-                 [tempfile "0.2.0" :scope "test"]]
-  
+                 [tempfile "0.2.0" :scope "test"]
+                 [org.jline/jline "3.11.0"]
+                 #_[org.fusesource.jansi/jansi "1.18"]
+                 [net.java.dev.jna/jna "5.3.1"]]
+                 
   :profiles {:uberjar {:aot :all}
 
              ;; Configuration here may be overridden by namespace metadata.
@@ -27,4 +30,5 @@
                          "/Users/beluchin/tmp"))
                      "/Users/beluchin/tmp"
                      "/difflog__/target")
-  )
+
+  :jvm-opts ["-Djava.util.logging.config.file=log.properties"])

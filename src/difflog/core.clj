@@ -5,7 +5,9 @@
 (declare difflog)
 (defn -main
   [& args]
-  (print (apply app/difflog args)))
+  (if (= "-i" (first args))
+    (apply app/interactive (rest args))
+    (print (apply app/difflog args))))
 
 
 (comment

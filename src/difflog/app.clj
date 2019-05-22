@@ -3,13 +3,15 @@
   (:require [clojure.string :as string]
             [difflog.domain :as domain]
             [clojure.edn :as edn]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import (org.jline.terminal TerminalBuilder Terminal)
+           (org.jline.reader LineReader LineReaderBuilder)))
 
-(declare one-line-output)
+(declare one-line-output normalize-line-endings)
+
 (defn output [diffs]
   (string/join (System/lineSeparator) (map one-line-output diffs)))
 
-(declare normalize-line-endings)
 (defn difflog
   ([lhs rhs] (difflog lhs rhs "{}"))
   ([lhs rhs rules]
@@ -17,6 +19,15 @@
     (domain/difflog (normalize-line-endings (slurp lhs))
                     (normalize-line-endings (slurp rhs))
                     (clojure.edn/read-string rules)))))
+
+(defn interactive [& args]
+  (let [term-builder (doto (TerminalBuilder/builder) (.system true))
+        term (.build term-builder)
+        reader (.. LineReaderBuilder (builder) (terminal term) (build))]
+    (println (.getName term) (.getType term))
+    (let [line (.readLine reader "hello world> ")]
+      (.. term (writer) (println (str "====>" line)))
+      (.flush term))))
 
 (defn- normalize-line-endings [s]
   (str/replace s #"\r\n|\n" domain/line-delimiter))
