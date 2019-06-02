@@ -12,8 +12,8 @@
 
                  [tempfile "0.2.0" :scope "test"]
                  [org.jline/jline "3.11.0"]
-                 #_[org.fusesource.jansi/jansi "1.18"]
-                 [net.java.dev.jna/jna "5.3.1"]]
+                 [org.fusesource.jansi/jansi "1.18"]
+                 #_[net.java.dev.jna/jna "5.3.1"]]
                  
   :profiles {:uberjar {:aot :all}
 
@@ -30,5 +30,7 @@
                          "/Users/beluchin/tmp"))
                      "/Users/beluchin/tmp"
                      "/difflog__/target")
+
+  :clean-targets ^{:protect false} ["c:\temp/Users/beluchin/tmp/difflog__/target"]
 
   :jvm-opts ["-Djava.util.logging.config.file=log.properties"])

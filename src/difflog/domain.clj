@@ -1,6 +1,7 @@
 (ns difflog.domain)
 
 (declare line-delimiter word-diffs contains-diff? trans-preds)
+
 (defn difflog
   "l, r are text"
   ([l r] (difflog l r {}))
