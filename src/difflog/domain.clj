@@ -1,16 +1,19 @@
 (ns difflog.domain)
 
-(declare line-delimiter word-diffs contains-diff? trans-preds)
+(declare line-delimiter tokenized-word-diffs contains-diff? trans-preds
+         difflogline-internal)
+
+(defn difflogline [lhs rhs rules]
+  (difflogline-internal lhs rhs (trans-preds rules)))
 
 (defn difflog
-  "l, r are text"
   ([l r] (difflog l r {}))
   ([l r rules]
    (let [llines (.split l line-delimiter)
          rlines (.split r line-delimiter)
          t-ps (trans-preds rules)]
      (remove (comp not contains-diff?)
-             (map #(word-diffs %1 %2 t-ps) llines rlines)))))
+             (map #(tokenized-word-diffs %1 %2 t-ps) llines rlines)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const token-delimiter "[\\s\\[\\]]")
@@ -72,15 +75,16 @@
     l
     [l r]))
 
-(defn- word-diffs
-  "computes word difference between two lines
-  ['hello world' 'goodbye world' {}] => [[hello goodbye] world]
-  ['a' 'b' {'a' 'b'}] => (empty? ...)"
-  [l r trans-preds]
+(defn- tokenized-word-diffs [l r trans-preds]
   (let [lwords (.split split-pattern l)
         rwords (.split split-pattern r)
         range-from-1 (drop 1 (range))]
     (map #(diff-or-word %1 %2 %3 trans-preds) lwords rwords range-from-1)))
+
+(defn- difflogline-internal [lhs rhs trans-preds]
+  (let [twd (tokenized-word-diffs lhs rhs trans-preds)]
+    (map #(if (string? (first %)) (apply str %) (first %))
+         (partition-by #(string? %) twd))))
 
 (defn- contains-diff? [line]
   (some vector? line))
@@ -92,6 +96,14 @@
 
 
 (comment
+  (seq (.split split-pattern "hello        world"))
+  (line-word-diffs "hello world" "goodbye world" {})
+  (partition-by #(string? %) [["a" "b"] " " "c"])
+  (map #(if (string? (first %)) (apply str %) (first %))
+       (partition-by #(string? %)
+                     [["a" "b"] "           " "c"]))
+  
+  (str "a" "b")
   (#{:a} :a)
   (#{:a} :b)
   (contains? #{:a} :a)

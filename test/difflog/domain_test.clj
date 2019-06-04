@@ -4,6 +4,8 @@
             [difflog.domain :as sut]
             [difflog.domain.num :as num]))
 
+(declare drop-last-arg)
+
 (t/deftest basic
   (t/testing "word difference"
     (t/is (= [[["hello" "goodbye"] " " "world"]]
@@ -20,7 +22,11 @@
                             (join ["first line is identical"
                                    "second has una difference"])))))))
 
-(declare drop-last-arg)
+(t/deftest difflogline
+  (t/testing "word difference"
+    (t/is (= [["hello" "goodbye"] " world"]
+             (sut/difflogline "hello world" "goodbye world" {})))))
+
 (t/deftest rules
   (t/testing "word"
     (t/is (empty? (sut/difflog "a" "b" {"a" "b"})))
