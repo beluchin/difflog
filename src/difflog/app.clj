@@ -42,9 +42,9 @@
       x)))
 
 (defn- one-line-output
-  "['a' 'b'] 'c' => [-a-]{+b+} c"
+  "['a' 'b'] ' c' => [-a-]{+b+} c"
   [line-diffs]
-  (string/join "" (map flatten-if-diff line-diffs)))
+  (string/join (map flatten-if-diff line-diffs)))
 
 
 (comment
