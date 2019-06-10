@@ -1,4 +1,5 @@
-(ns difflog.domain)
+(ns difflog.domain
+  (:require [clojure.string :as string]))
 
 (declare line-delimiter tokenized-word-diffs contains-diff? trans-preds
          difflogline-internal)
@@ -13,7 +14,7 @@
          rlines (.split r line-delimiter)
          t-ps (trans-preds rules)]
      (remove (comp not contains-diff?)
-             (map #(tokenized-word-diffs %1 %2 t-ps) llines rlines)))))
+             (map #(difflogline-internal %1 %2 t-ps) llines rlines)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const token-delimiter "[\\s\\[\\]]")
@@ -83,7 +84,7 @@
 
 (defn- difflogline-internal [lhs rhs trans-preds]
   (let [twd (tokenized-word-diffs lhs rhs trans-preds)]
-    (map #(if (string? (first %)) (apply str %) (first %))
+    (map #(if (string? (first %)) (string/join %) (first %))
          (partition-by #(string? %) twd))))
 
 (defn- contains-diff? [line]
@@ -99,7 +100,7 @@
   (seq (.split split-pattern "hello        world"))
   (line-word-diffs "hello world" "goodbye world" {})
   (partition-by #(string? %) [["a" "b"] " " "c"])
-  (map #(if (string? (first %)) (apply str %) (first %))
+  (map #(if (string? (first %)) (string/join %) (first %))
        (partition-by #(string? %)
                      [["a" "b"] "           " "c"]))
   

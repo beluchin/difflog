@@ -8,7 +8,7 @@
 
 (t/deftest basic
   (t/testing "word difference"
-    (t/is (= [[["hello" "goodbye"] " " "world"]]
+    (t/is (= [[["hello" "goodbye"] " world"]]
              (sut/difflog "hello world" "goodbye world"))))
 
   (t/testing "do not return identical lines by default"
@@ -16,7 +16,7 @@
 
   (t/testing "multilines"
     (let [join (partial string/join (System/lineSeparator))]
-      (t/is (= [["second" " " "has" " " ["one" "una"] " " "difference"]]
+      (t/is (= [["second has " ["one" "una"] " difference"]]
                (sut/difflog (join ["first line is identical" 
                                    "second has one difference"])
                             (join ["first line is identical"
@@ -25,7 +25,11 @@
 (t/deftest difflogline
   (t/testing "word difference"
     (t/is (= [["hello" "goodbye"] " world"]
-             (sut/difflogline "hello world" "goodbye world" {})))))
+             (sut/difflogline "hello world" "goodbye world" {}))))
+
+  (t/testing "identical lines"
+    (t/is (= ["hello world"]
+             (sut/difflogline "hello world" "hello world" {})))))
 
 (t/deftest rules
   (t/testing "word"
