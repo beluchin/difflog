@@ -40,6 +40,7 @@
   (clojure.string/join (System/lineSeparator) strings))
 
 (defn- main [lhstext rhstext & args]
+  ;; duplicated in interactive-test
   (f/with-tempfile [l (f/tempfile lhstext)
                     r (f/tempfile rhstext)]
     (clojure.string/trim-newline
