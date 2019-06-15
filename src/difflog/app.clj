@@ -9,9 +9,6 @@
 
 (declare one-line-output normalize-line-endings)
 
-(defn output [diffs]
-  (string/join (System/lineSeparator) (map one-line-output diffs)))
-
 (defn difflog
   ([lhs rhs] (difflog lhs rhs "{}"))
   ([lhs rhs rules]
@@ -19,6 +16,9 @@
     (domain/difflog (normalize-line-endings (slurp lhs))
                     (normalize-line-endings (slurp rhs))
                     (clojure.edn/read-string rules)))))
+
+(defn output [diffs]
+  (string/join (System/lineSeparator) (map one-line-output diffs)))
 
 (defn interactive [& args]
   (let [term-builder (doto (TerminalBuilder/builder) (.system true))
