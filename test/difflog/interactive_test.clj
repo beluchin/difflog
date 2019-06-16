@@ -6,7 +6,7 @@
 (declare interactive)
 
 (t/deftest interactive-session
-  (t/testing "next" (t/is (= "[-a-]{+b+}" (do
+  (t/testing "first next" (t/is (= "[-a-]{+b+}" (do
                                             (interactive "a" "b")
                                             (sut/next)))))
   (t/testing "next skips over lines with no differences" ,,,)

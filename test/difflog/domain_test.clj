@@ -25,7 +25,9 @@
 (t/deftest difflogline
   (t/testing "word difference"
     (t/is (= [["hello" "goodbye"] " world"]
-             (sut/difflogline "hello world" "goodbye world" {}))))
+             (sut/difflogline "hello world" "goodbye world" {})))
+    (t/is (= [["a" "b"]]
+             (sut/difflogline "a" "b" {}))))
 
   (t/testing "identical lines"
     (t/is (= ["hello world"]

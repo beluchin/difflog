@@ -1,24 +1,27 @@
 (ns difflog.app
   (:refer-clojure :exclude [flatten])
-  (:require [clojure.string :as string]
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [difflog.domain :as domain]
-            [clojure.edn :as edn]
-            [clojure.string :as str])
-  (:import (org.jline.terminal TerminalBuilder Terminal)
-           (org.jline.reader LineReader LineReaderBuilder)))
+            [difflog.files :as files])
+  (:import org.jline.reader.LineReaderBuilder
+           org.jline.terminal.TerminalBuilder))
 
-(declare one-line-output normalize-line-endings)
+(declare output one-line-output normalize-line-endings)
 
 (defn difflog
   ([lhs rhs] (difflog lhs rhs "{}"))
   ([lhs rhs rules]
    (output
-    (domain/difflog (normalize-line-endings (slurp lhs))
-                    (normalize-line-endings (slurp rhs))
+    (domain/difflog (files/slurp-log lhs)
+                    (files/slurp-log rhs)
                     (clojure.edn/read-string rules)))))
 
+(defn difflogline [lhs rhs]
+  (one-line-output (domain/difflogline (.trim lhs) (.trim rhs) {})))
+
 (defn output [diffs]
-  (string/join (System/lineSeparator) (map one-line-output diffs)))
+  (str/join (System/lineSeparator) (map one-line-output diffs)))
 
 (defn interactive [& args]
   (let [term-builder (doto (TerminalBuilder/builder) (.system true))
@@ -28,9 +31,6 @@
     (let [line (.readLine reader "hello world> ")]
       (.. term (writer) (println (str "====>" line)))
       (.flush term))))
-
-(defn- normalize-line-endings [s]
-  (str/replace s #"\r\n|\n" domain/line-delimiter))
 
 (defn- flatten [[lhs rhs]]
    (format "[-%s-]{+%s+}" lhs rhs))
@@ -44,7 +44,7 @@
 (defn- one-line-output
   "['a' 'b'] ' c' => [-a-]{+b+} c"
   [line-diffs]
-  (string/join (map flatten-if-diff line-diffs)))
+  (str/join (map flatten-if-diff line-diffs)))
 
 
 (comment
