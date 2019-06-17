@@ -5,9 +5,15 @@
 (declare session)
 
 (defn interactive [lhs rhs]
-  (reset! session {:lhs (files/slurp-log lhs)
-                   :rhs (files/slurp-log rhs)}))
+  (reset! session {:lhs (files/line-seq lhs)
+                   :rhs (files/line-seq rhs)
+                   :pos 0}))
 
-(defn next [] (app/difflogline (:lhs @session) (:rhs @session)))
+(defn next []
+  (let [pos (:pos @session)
+        result (app/difflogline (nth (:lhs @session) pos)
+                                (nth (:rhs @session) pos))]
+    (swap! session update-in [:pos] inc)
+    result))
 
 (def ^:private session (atom nil))
