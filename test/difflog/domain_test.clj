@@ -9,17 +9,18 @@
 (t/deftest difflog
   (t/testing "word difference"
     (t/is (= [[{:lhs "hello" :rhs "goodbye" :ignored false}  " world"]]
-             (sut/difflog ["hello world"] ["goodbye world"]))))
+             (sut/difflog ["hello world"] ["goodbye world"] {}))))
 
   (t/testing "identical lines"
-    (t/is (let [s "hello world"] (= [[s]] (sut/difflog [s] [s])))))
+    (t/is (let [s "hello world"] (= [[s]] (sut/difflog [s] [s] {})))))
 
   (t/testing "multilines"
     (t/is (let [first-line "first line is identical"]
             (= [[first-line]
                 ["second has " {:lhs "one" :rhs "una" :ignored false} " difference"]]
                (sut/difflog [first-line "second has one difference"]
-                            [first-line "second has una difference"]))))))
+                            [first-line "second has una difference"]
+                            {}))))))
 
 (t/deftest difflogline
   (t/testing "word difference"

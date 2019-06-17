@@ -7,10 +7,12 @@
 (defn difflogline [lhs rhs rules]
   (difflogline-internal lhs rhs (trans-preds rules)))
 
-(defn difflog
-  ([lhs rhs] (difflog lhs rhs {}))
-  ([lhs rhs rules]
-   (map #(difflogline-internal %1 %2 (trans-preds rules)) lhs rhs)))
+(defn difflog 
+  "lhs, rhs: sequences of lines (line endings should be trimmed prior)
+   rules: a map of rules"
+  [lhs rhs rules]
+  (let [t-p (trans-preds rules)]
+    (map #(difflogline-internal %1 %2 t-p) lhs rhs)))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const token-delimiter "[\\s\\[\\]]")
