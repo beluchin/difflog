@@ -5,4 +5,4 @@
 (t/deftest difflog
   (t/testing "plain output"
     (t/is (= "[-hello-]{+goodbye+} world"
-             (sut/output [[["hello" "goodbye"] " " "world"]])))))
+             (sut/output [[{:lhs "hello" :rhs "goodbye" :ignored false} " world"]])))))

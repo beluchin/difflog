@@ -6,26 +6,27 @@
 
 (declare drop-last-arg)
 
-(t/deftest basic
+(t/deftest difflog
   (t/testing "word difference"
-    (t/is (= [[["hello" "goodbye"] " world"]]
+    (t/is (= [[{:lhs "hello" :rhs "goodbye" :ignored false}  " world"]]
              (sut/difflog ["hello world"] ["goodbye world"]))))
 
-  (t/testing "do not return identical lines by default"
-    (t/is (empty? (sut/difflog ["hello world"] ["hello world"]))))
+  (t/testing "identical lines"
+    (t/is (let [s "hello world"] (= [[s]] (sut/difflog [s] [s])))))
 
   (t/testing "multilines"
-    (let [join (partial string/join (System/lineSeparator))]
-      (t/is (= [["second has " ["one" "una"] " difference"]]
-               (sut/difflog  ["first line is identical" "second has one difference"]
-                             ["first line is identical" "second has una difference"]))))))
+    (t/is (let [first-line "first line is identical"]
+            (= [[first-line]
+                ["second has " {:lhs "one" :rhs "una" :ignored false} " difference"]]
+               (sut/difflog [first-line "second has one difference"]
+                            [first-line "second has una difference"]))))))
 
 (t/deftest difflogline
   (t/testing "word difference"
-    (t/is (= [["hello" "goodbye"] " world"]
-             (sut/difflogline "hello world" "goodbye world" {})))
-    (t/is (= [["a" "b"]]
-             (sut/difflogline "a" "b" {}))))
+    (t/is (= [{:lhs "a" :rhs "b" :ignored false}]
+             (sut/difflogline "a" "b" {})))
+    (t/is (= [{:lhs "hello" :rhs "goodbye" :ignored false} " world"]
+             (sut/difflogline "hello world" "goodbye world" {}))))
 
   (t/testing "identical lines"
     (t/is (= ["hello world"]
@@ -33,24 +34,33 @@
 
 (t/deftest rules
   (t/testing "word"
-    (t/is (empty? (sut/difflog ["a"] ["b"] {"a" "b"})))
-    (t/is (seq (sut/difflog ["a"] ["b"] {"b" "a"})))) ; not empty; not symmetrical
+    (t/is (= [{:lhs "a" :rhs "b" :ignored true}]
+             (sut/difflogline "a" "b" {"a" "b"})))
+    (t/is (= [{:lhs "a" :rhs "b" :ignored false}]
+             (sut/difflogline "a" "b" {"b" "a"})))) ; not symmetrical
 
   (t/testing "numerical"
     (let [rule-spec {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
-      (t/is (empty? (sut/difflog ["1.01"] ["1.02"] rule-spec)))
-      (t/is (seq (sut/difflog ["1.01 hello"] ["1.02 world"] rule-spec))))
-
-    (t/is (seq (sut/difflog ["1.01 hello"] ["1.02 world"]
-                            {:num (num/diff-no-larger-than 0.1)}))))
+      (t/is (= [{:lhs "1.01" :rhs "1.02" :ignored true}]
+               (sut/difflogline "1.01" "1.02" rule-spec)))
+      (t/is (= [{:lhs "1.01" :rhs "1.02" :ignored true}
+                " "
+                {:lhs "hello" :rhs "world" :ignored false}]
+               (sut/difflogline "1.01 hello" "1.02 world"
+                                {:num (num/diff-no-larger-than 0.1)})))))
 
   (t/testing "one column"
-    (t/is (empty? (sut/difflog ["hello"] ["world"] {:col 1})))
-    (t/is (empty? (sut/difflog ["hello world"] ["hello mundo"] {:col 3}))))
+    (t/is (= ["hello " {:lhs "world" :rhs "mundo" :ignored false}]
+             (sut/difflogline "hello world" "hello mundo" {:col 1})))
+    (t/is (= ["hello " {:lhs "world" :rhs "mundo" :ignored true}]
+             (sut/difflogline "hello world" "hello mundo" {:col 3}))))
 
   (t/testing "multiple columns"
-    (t/is (empty? (sut/difflog ["hello dear world"] ["goodbye dear mundo"]
-                               {:col #{1 5}})))))
+      (t/is (= [{:lhs "hello" :rhs "goodbye" :ignored true}
+                " dear "
+                {:lhs "world" :rhs "mundo" :ignored true}]
+               (sut/difflogline "hello dear world" "goodbye dear mundo"
+                            {:col #{1 5}})))))
 
 (defn- drop-last-arg [fn]
   #(apply fn (drop-last %&)))

@@ -16,8 +16,7 @@
       (t/is (empty? (main lhs rhs "{\"hello\" \"goodbye\"}")))))
 
   (t/testing "[ and ] are delimiters"
-    (t/is (= "[[-a-]{+b+}]"
-             (main "[a]" "[b]")))))
+    (t/is (= "[[-a-]{+b+}]" (main "[a]" "[b]")))))
 
 (t/deftest line-separator-on-input
   (t/testing "\r\n as line separator"

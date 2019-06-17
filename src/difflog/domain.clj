@@ -10,9 +10,7 @@
 (defn difflog
   ([lhs rhs] (difflog lhs rhs {}))
   ([lhs rhs rules]
-   (let [t-ps (trans-preds rules)]
-     (remove (comp not contains-diff?)
-             (map #(difflogline-internal %1 %2 t-ps) lhs rhs)))))
+   (map #(difflogline-internal %1 %2 (trans-preds rules)) lhs rhs)))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const token-delimiter "[\\s\\[\\]]")
@@ -58,27 +56,27 @@
 (defn- trans-preds [rules]
   (set (map trans-pred rules)))
 
-(defn- ignore-diff-one? [l r idx [transformer predicate]]
-  (let [transformed (transformer [l r])]
+(defn- ignore-diff? [lhs rhs idx [transformer predicate]]
+  (let [transformed (transformer [lhs rhs])]
     (if (= :na transformed)
       false
       (apply #(predicate %1 %2 idx) transformed))))
 
-(defn- ignore-diff? [l r idx trans-preds]
-  (some true? (map (partial ignore-diff-one? l r idx) trans-preds)))
+(defn- diff [lhs rhs idx trans-preds]
+  {:lhs lhs
+   :rhs rhs
+   :ignored (not-every? false? (map (partial ignore-diff? lhs rhs idx) trans-preds))})
 
-(defn- diff-or-word
-  "takes in two words. applies rules only if the words are different"
-  [l r idx trans-preds]
-  (if (or (= l r) (ignore-diff? l r idx trans-preds))
-    l
-    [l r]))
+(defn- diff-or-token
+  "takes in two tokens. applies rules only if the tokens are different"
+  [lhs rhs idx trans-preds]
+  (if (= lhs rhs) lhs (diff lhs rhs idx trans-preds)))
 
 (defn- tokenized-word-diffs [l r trans-preds]
   (let [lwords (.split split-pattern l)
         rwords (.split split-pattern r)
         range-from-1 (drop 1 (range))]
-    (map #(diff-or-word %1 %2 %3 trans-preds) lwords rwords range-from-1)))
+    (map #(diff-or-token %1 %2 %3 trans-preds) lwords rwords range-from-1)))
 
 (defn- difflogline-internal [lhs rhs trans-preds]
   (let [twd (tokenized-word-diffs lhs rhs trans-preds)]
