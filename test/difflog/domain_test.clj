@@ -9,18 +9,16 @@
 (t/deftest basic
   (t/testing "word difference"
     (t/is (= [[["hello" "goodbye"] " world"]]
-             (sut/difflog "hello world" "goodbye world"))))
+             (sut/difflog ["hello world"] ["goodbye world"]))))
 
   (t/testing "do not return identical lines by default"
-    (t/is (empty? (sut/difflog "hello world" "hello world"))))
+    (t/is (empty? (sut/difflog ["hello world"] ["hello world"]))))
 
   (t/testing "multilines"
     (let [join (partial string/join (System/lineSeparator))]
       (t/is (= [["second has " ["one" "una"] " difference"]]
-               (sut/difflog (join ["first line is identical" 
-                                   "second has one difference"])
-                            (join ["first line is identical"
-                                   "second has una difference"])))))))
+               (sut/difflog  ["first line is identical" "second has one difference"]
+                             ["first line is identical" "second has una difference"]))))))
 
 (t/deftest difflogline
   (t/testing "word difference"
@@ -35,23 +33,23 @@
 
 (t/deftest rules
   (t/testing "word"
-    (t/is (empty? (sut/difflog "a" "b" {"a" "b"})))
-    (t/is (seq (sut/difflog "a" "b" {"b" "a"})))) ; not empty; not symmetrical
+    (t/is (empty? (sut/difflog ["a"] ["b"] {"a" "b"})))
+    (t/is (seq (sut/difflog ["a"] ["b"] {"b" "a"})))) ; not empty; not symmetrical
 
   (t/testing "numerical"
     (let [rule-spec {:num (comp #(< % 0.1) #(Math/abs %) (drop-last-arg -))}]
-      (t/is (empty? (sut/difflog "1.01" "1.02" rule-spec)))
-      (t/is (seq (sut/difflog "1.01 hello" "1.02 world" rule-spec))))
+      (t/is (empty? (sut/difflog ["1.01"] ["1.02"] rule-spec)))
+      (t/is (seq (sut/difflog ["1.01 hello"] ["1.02 world"] rule-spec))))
 
-    (t/is (seq (sut/difflog "1.01 hello" "1.02 world"
+    (t/is (seq (sut/difflog ["1.01 hello"] ["1.02 world"]
                             {:num (num/diff-no-larger-than 0.1)}))))
 
   (t/testing "one column"
-    (t/is (empty? (sut/difflog "hello" "world" {:col 1})))
-    (t/is (empty? (sut/difflog "hello world" "hello mundo" {:col 3}))))
+    (t/is (empty? (sut/difflog ["hello"] ["world"] {:col 1})))
+    (t/is (empty? (sut/difflog ["hello world"] ["hello mundo"] {:col 3}))))
 
   (t/testing "multiple columns"
-    (t/is (empty? (sut/difflog "hello dear world" "goodbye dear mundo"
+    (t/is (empty? (sut/difflog ["hello dear world"] ["goodbye dear mundo"]
                                {:col #{1 5}})))))
 
 (defn- drop-last-arg [fn]

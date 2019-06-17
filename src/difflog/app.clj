@@ -12,10 +12,9 @@
 (defn difflog
   ([lhs rhs] (difflog lhs rhs "{}"))
   ([lhs rhs rules]
-   (output
-    (domain/difflog (files/slurp-log lhs)
-                    (files/slurp-log rhs)
-                    (clojure.edn/read-string rules)))))
+   (output (domain/difflog (files/get-line-seq lhs)
+                           (files/get-line-seq rhs)
+                           (clojure.edn/read-string rules)))))
 
 (defn difflogline [lhs rhs]
   (one-line-output (domain/difflogline (.trim lhs) (.trim rhs) {})))

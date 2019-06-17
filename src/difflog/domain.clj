@@ -8,13 +8,11 @@
   (difflogline-internal lhs rhs (trans-preds rules)))
 
 (defn difflog
-  ([l r] (difflog l r {}))
-  ([l r rules]
-   (let [llines (.split l line-delimiter)
-         rlines (.split r line-delimiter)
-         t-ps (trans-preds rules)]
+  ([lhs rhs] (difflog lhs rhs {}))
+  ([lhs rhs rules]
+   (let [t-ps (trans-preds rules)]
      (remove (comp not contains-diff?)
-             (map #(difflogline-internal %1 %2 t-ps) llines rlines)))))
+             (map #(difflogline-internal %1 %2 t-ps) lhs rhs)))))
 
 (def ^:const line-delimiter (System/lineSeparator))
 (def ^:const token-delimiter "[\\s\\[\\]]")
