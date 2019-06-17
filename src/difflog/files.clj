@@ -7,7 +7,7 @@
 (defn slurp-log [filename]
   (normalize-line-endings (slurp filename)))
 
-(defn line-seq [filename]
+(defn get-line-seq [filename]
   (.split (slurp-log filename) (System/lineSeparator)))
 
 (defn- normalize-line-endings [s]

@@ -1,12 +1,13 @@
 (ns difflog.interactive
+  (:refer-clojure :exclude [next])
   (:require [difflog.files :as files]
             [difflog.app :as app]))
 
 (declare session)
 
 (defn interactive [lhs rhs]
-  (reset! session {:lhs (files/line-seq lhs)
-                   :rhs (files/line-seq rhs)
+  (reset! session {:lhs (files/get-line-seq lhs)
+                   :rhs (files/get-line-seq rhs)
                    :pos 0}))
 
 (defn next []
