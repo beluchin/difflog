@@ -6,16 +6,11 @@
 (declare interactive)
 
 (t/deftest nexts
-  (t/testing "first"
-    (t/is (= "[-a-]{+b+}" (do (interactive "a" "b")
-                              (sut/next)))))
-  (t/testing "multiple"
-    (t/is (= "[-a2-]{+b2+}" (do (interactive "a1\na2" "b1\nb2")
-                                (sut/next)
-                                (sut/next)))))
-    
-  (t/testing "next skips over lines with no differences" ,,,)
-  (t/testing "previous" ,,,))
+  (do    
+    (interactive "a1\na2" "b1\nb2")
+    (t/is (= "[-a1-]{+b1+}" (sut/next)))
+    (t/is (= "[-a2-]{+b2+}" (sut/next)))
+    (t/is (= :no-more-diffs (sut/next)))))
 
 (defn- interactive [lhstext rhstext]
   ;; duplicated in core-test
