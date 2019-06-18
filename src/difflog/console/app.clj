@@ -1,9 +1,9 @@
-(ns difflog.app
+(ns difflog.console.app
   (:refer-clojure :exclude [flatten])
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
-            [difflog.domain :as domain]
-            [difflog.files :as files])
+            [difflog.console.files :as files]
+            [difflog.domain :as domain])
   (:import org.jline.reader.LineReaderBuilder
            org.jline.terminal.TerminalBuilder))
 
@@ -20,8 +20,8 @@
   (one-line-output (domain/difflogline (.trim lhs) (.trim rhs) {})))
 
 (defn output [diffs]
-  (str/join (System/lineSeparator) (map one-line-output
-                                        (remove all-diff-ignored? diffs))))
+  (let [ss (map one-line-output (remove all-diff-ignored? diffs))]
+    (when (not= ss []) (str/join (System/lineSeparator) ss))))
 
 (defn interactive [& args]
   (let [term-builder (doto (TerminalBuilder/builder) (.system true))

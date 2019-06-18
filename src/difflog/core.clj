@@ -1,13 +1,8 @@
 (ns difflog.core
   (:gen-class)
-  (:require [difflog.app :as app]))
+  (:require [difflog.console :as console]))
 
-(declare difflog)
-(defn -main
-  [& args]
-  (if (= "-i" (first args))
-    (apply app/interactive (rest args))
-    (print (apply app/difflog args))))
+(defn -main [& args] (console/difflog args))
 
 
 (comment

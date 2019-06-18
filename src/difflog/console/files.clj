@@ -1,4 +1,4 @@
-(ns difflog.files
+(ns difflog.console.files
   (:require [clojure.string :as str]
             [difflog.domain :as domain]))
 

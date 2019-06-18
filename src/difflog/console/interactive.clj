@@ -1,4 +1,4 @@
-(ns difflog.interactive
+(ns difflog.console.interactive
   (:refer-clojure :exclude [next])
   (:require [difflog.files :as files]
             [difflog.app :as app]))
