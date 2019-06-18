@@ -1,5 +1,5 @@
-(ns difflog.app-test
-  (:require [difflog.app :as sut]
+(ns difflog.console.app-test
+  (:require [difflog.console.app :as sut]
             [clojure.test :as t]))
 
 (t/deftest difflog
